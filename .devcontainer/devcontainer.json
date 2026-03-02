@@ -1,0 +1,46 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "hostRequirements": {
+      "cpus": 4
+    },
+    "waitFor": "onCreateCommand",
+    "updateContentCommand": "pip install -r requirements.txt",
+    "postCreateCommand": "",
+    "postAttachCommand": {
+      "server": "flask --debug run"
+    },
+    "portsAttributes": {
+      "5000": {
+        "label": "Application",
+        "onAutoForward": "openPreview"
+      }
+    },
+    "customizations": {
+      "codespaces": {
+        "openFiles": [
+          "templates/index.html"
+        ]
+      },
+      "vscode": {
+        "settings": {
+          "github.copilot.enable": {
+            "*": false
+          },
+          "github.copilot.editor.enableAutoCompletions": false,
+          "github.copilot.chat.editor.temporalContext.enabled": false,
+          "chat.commandCenter.enabled": false,
+          "editor.inlineSuggest.enabled": false
+        },
+        "extensions": [
+          "ms-python.python",
+          "ms-python.vscode-pylance",
+          "ms-python.flask-snippets",
+          "alexcvzz.vscode-sqlite",
+          "yy0931.vscode-sqlite3-editor"
+        ]
+      },
+      "postCreateCommand": "pip install flask flask-admin sqlalchemy sqlite3",
+    },
+    "forwardPorts": [5000]
+  }
+  

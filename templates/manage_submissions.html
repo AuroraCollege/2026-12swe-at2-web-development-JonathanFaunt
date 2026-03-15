@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="height: 15vh;">
+  <div class="card p-4 bg-white" style="width: 1500px;">
+    <h1 class="text-primary">Manage Submissions</h1>
+  </div>
+</div>
+
+  <table class="table table-dark table-striped table-bordered mt-3">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Leaderboard</th>
+        <th>Score</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for entry in entries %}
+      <tr>
+        <td>{{ entry.username }}</td>
+        <td>{{ entry.leaderboard_name }}</td>
+        <td>{{ entry.score }}</td>
+        <td>
+          <a href="{{ url_for('delete_entry', entry_id=entry.id) }}"
+             class="btn btn-danger btn-sm">
+            Delete
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

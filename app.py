@@ -25,7 +25,6 @@ def home():
     if "user_id" in session:
         db = get_db()
         leaderboards = db.execute("SELECT * FROM leaderboards").fetchall()
-        print("DEBUG leaderboards:", leaderboards)
         return render_template("home.html", leaderboards=leaderboards, username = session["username"])
     else:
         return redirect('/login')
@@ -84,10 +83,22 @@ def show_leaderboard(leaderboard_id):
         "SELECT * FROM leaderboards WHERE id = ?", (leaderboard_id,)
     ).fetchone()
 
-    entries = db.execute(
-        "SELECT * FROM leaderboard_entries WHERE leaderboard_id = ? ORDER BY score DESC",
-        (leaderboard_id,)
-    ).fetchall()
+    lb = db.execute(
+    "SELECT * FROM leaderboards WHERE id = ?",
+    (leaderboard_id,)
+    ).fetchone()
+
+
+    if lb["type"] == "time":
+        entries = db.execute(
+            "SELECT * FROM leaderboard_entries WHERE leaderboard_id = ? ORDER BY score ASC",
+            (leaderboard_id,)
+        ).fetchall()
+    else:
+        entries = db.execute(
+            "SELECT * FROM leaderboard_entries WHERE leaderboard_id = ? ORDER BY score DESC",
+            (leaderboard_id,)
+        ).fetchall()
 
     return render_template("leaderboard.html", leaderboard=leaderboard, entries=entries)
 
@@ -99,9 +110,14 @@ def submit():
         leaderboard_id = request.form["leaderboard_id"]
         score = request.form["score"]
 
+        lb = db.execute(
+            "SELECT type FROM leaderboards WHERE id = ?",
+            (leaderboard_id,)
+        ).fetchone()
+
         db.execute(
-            "INSERT INTO leaderboard_entries (leaderboard_id, user_id, score) VALUES (?, ?, ?)",
-            (leaderboard_id, session["user_id"], score)
+            "INSERT INTO leaderboard_entries (leaderboard_id, user_id, user, type, score) VALUES (?, ?, ?, ?, ?)",
+            (leaderboard_id, session["user_id"], session["username"], lb["type"], score)
         )
         db.commit()
 
@@ -113,6 +129,59 @@ def submit():
 @app.route("/moderation",  methods=["GET", "POST"])
 def moderation():
     db = get_db()
-    if g.user["role"] != "Moderator":
-        return "Access denied"
     return render_template("moderation.html")
+
+@app.route("/moderation/new_leaderboard", methods=["GET", "POST"])
+def new_leaderboard():
+    if request.method == "POST":
+        name = request.form["name"]
+        description = request.form["description"]
+        type = request.form["type"]
+
+        db = get_db()
+        db.execute(
+            "INSERT INTO leaderboards (name, description, type) VALUES (?, ?, ?)",
+            (name, description, type)
+        )
+        db.commit()
+
+        return redirect("/moderation")
+
+    return render_template("new_leaderboard.html")
+
+@app.route("/moderation/submissions")
+def manage_submissions():
+    db = get_db()
+    entries = db.execute("""
+        SELECT leaderboard_entries.id, leaderboard_entries.score,
+               users.username, leaderboards.name AS leaderboard_name
+        FROM leaderboard_entries
+        JOIN users ON users.id = leaderboard_entries.user_id
+        JOIN leaderboards ON leaderboards.id = leaderboard_entries.leaderboard_id
+        ORDER BY leaderboard_entries.id DESC
+    """).fetchall()
+
+    return render_template("manage_submissions.html", entries=entries)
+
+@app.route("/moderation/delete_entry/<int:entry_id>")
+def delete_entry(entry_id):
+    db = get_db()
+    db.execute("DELETE FROM leaderboard_entries WHERE id = ?", (entry_id,))
+    db.commit()
+
+    return redirect("/moderation/submissions")
+
+@app.route("/moderation/users")
+def manage_users():
+    db = get_db()
+    users = db.execute("SELECT id, username, role FROM users").fetchall()
+
+    return render_template("manage_users.html", users=users)
+
+@app.route("/moderation/delete_user/<int:user_id>")
+def delete_user(user_id):
+    db = get_db()
+    db.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    db.commit()
+
+    return redirect("/moderation/users")

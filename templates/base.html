@@ -30,7 +30,7 @@
         {% endif %}
         {% if g.user and g.user['role'] == 'Moderator' %}
         <li class="nav-item mx-3, mt-2">
-          <a class="nav-link" href="{{ url_for('moderation') }}">Submit</a>
+          <a class="nav-link" href="{{ url_for('moderation') }}">Moderation</a>
         </li>
         {% endif %}
         <li class="nav-item mx-3, mt-2">

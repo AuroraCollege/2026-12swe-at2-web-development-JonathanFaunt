@@ -1,4 +1,41 @@
 {% extends 'base.html' %}
-<div>
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center" style="height: 15vh;">
+  <div class="card p-4 bg-white" style="width: 1500px;">
     <h1 class="text-primary">Home</h1>
+  </div>
 </div>
+
+<div class="container mt-4">
+  <div class="row">
+
+    {% for lb in leaderboards %}
+    <div class="col-md-4 mb-4">
+      <div class="card bg-secondary text-light h-100 ">
+
+        {% if lb.image_path %}
+          <img src="{{ lb.image_path }}" class="card-img-top" alt="{{ lb.name }}">
+        {% else %}
+          <div class="p-5 text-center" style="background-color: #444;">
+            <h4 class="m-0">{{ lb.name }}</h4>
+          </div>
+        {% endif %}
+
+        <div class="card-body">
+          <h5 class="card-title">{{ lb.name }}</h5>
+          <p class="card-text">{{ lb.description }}</p>
+          <a href="{{ url_for('show_leaderboard', leaderboard_id=lb.id) }}" class="btn btn-primary">
+            View Leaderboard
+          </a>
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+{% endblock %}

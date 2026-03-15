@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-4 text-light">
+
+  <h1 class="text-center">{{ leaderboard['name'] }}</h1>
+
+  <div class="text-center mb-3">
+    {% if leaderboard['image_path'] %}
+      <img src="{{ leaderboard['image_path'] }}" alt="{{ leaderboard['name'] }}" style="max-width: 500px;">
+    {% else %}
+      <div class="p-5 text-center" style="background-color: #444;">
+        <h4 class="m-0">{{ leaderboard['name'] }}</h4>
+      </div>
+    {% endif %}
+    <div class="card mt-2 bg-white text-dark">
+        <p class="mt-2">{{ leaderboard['description'] }}</p>
+    </div>
+  </div>
+
+  <table class="table table-dark table-striped table-bordered">
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>User</th>
+        <th>{{ leaderboard['type']|capitalize }}</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for entry in entries %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ entry['user'] }}</td>
+        <td>{{ entry['score'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock %}

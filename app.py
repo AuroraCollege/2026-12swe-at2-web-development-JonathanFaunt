@@ -1,15 +1,14 @@
-from flask import Flask, render_template, redirect, request, session
+from flask import Flask, render_template, redirect, request, session, g
 import sqlite3
 
 app = Flask(__name__)
 app.secret_key = "secret_key"
 
 def get_db():
-    conn = sqlite3.connect("database.db")
-    conn.row_factory = sqlite3.Row
-    return conn
-
-from flask import g
+    if "db" not in g:
+        g.db = sqlite3.connect("database.db")
+        g.db.row_factory = sqlite3.Row
+    return g.db
 
 @app.before_request
 def load_user():
@@ -24,8 +23,10 @@ def load_user():
 @app.route("/")
 def home():
     if "user_id" in session:
-        return render_template('home.html', username = session["username"])
-        print('at Homepage')
+        db = get_db()
+        leaderboards = db.execute("SELECT * FROM leaderboards").fetchall()
+        print("DEBUG leaderboards:", leaderboards)
+        return render_template("home.html", leaderboards=leaderboards, username = session["username"])
     else:
         return redirect('/login')
         print('going to Login')
@@ -75,3 +76,43 @@ def login():
 def logout():
     session.clear()
     return redirect('/login')
+
+@app.route("/leaderboard/<int:leaderboard_id>")
+def show_leaderboard(leaderboard_id):
+    db = get_db()
+    leaderboard = db.execute(
+        "SELECT * FROM leaderboards WHERE id = ?", (leaderboard_id,)
+    ).fetchone()
+
+    entries = db.execute(
+        "SELECT * FROM leaderboard_entries WHERE leaderboard_id = ? ORDER BY score DESC",
+        (leaderboard_id,)
+    ).fetchall()
+
+    return render_template("leaderboard.html", leaderboard=leaderboard, entries=entries)
+
+@app.route("/submit", methods=["GET", "POST"])
+def submit():
+    db = get_db()
+
+    if request.method == "POST":
+        leaderboard_id = request.form["leaderboard_id"]
+        score = request.form["score"]
+
+        db.execute(
+            "INSERT INTO leaderboard_entries (leaderboard_id, user_id, score) VALUES (?, ?, ?)",
+            (leaderboard_id, session["user_id"], score)
+        )
+        db.commit()
+
+        return redirect(f"/leaderboard/{leaderboard_id}")
+
+    leaderboards = db.execute("SELECT * FROM leaderboards").fetchall()
+    return render_template("submit.html", leaderboards=leaderboards)
+
+@app.route("/moderation",  methods=["GET", "POST"])
+def moderation():
+    db = get_db()
+    if g.user["role"] != "Moderator":
+        return "Access denied"
+    return render_template("moderation.html")

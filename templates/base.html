@@ -21,9 +21,19 @@
           </li>
         {% endif %}
         <li class="nav-item mx-3, mt-2">
-          <span class="navbar-text">{{ g.user['username'] }}</span>
+          <span class="nav-link disabled text-light">{{ g.user['username'] }}</span>
         </li>
-        <li class="nav-item mx-3">
+        {% if g.user and g.user['role'] == 'User' %}
+        <li class="nav-item mx-3, mt-2">
+          <a class="nav-link" href="{{ url_for('submit') }}">Submit</a>
+        </li>
+        {% endif %}
+        {% if g.user and g.user['role'] == 'Moderator' %}
+        <li class="nav-item mx-3, mt-2">
+          <a class="nav-link" href="{{ url_for('moderation') }}">Submit</a>
+        </li>
+        {% endif %}
+        <li class="nav-item mx-3, mt-2">
           <a class="nav-link" href="{{ url_for('logout') }}">Log Out</a>
         </li>
       {% else %}

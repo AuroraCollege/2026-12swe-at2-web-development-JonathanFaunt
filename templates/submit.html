@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center" style="height: 15vh;">
+  <div class="card p-4 bg-white" style="width: 1500px;">
+    <h1 class="text-primary">Submission</h1>
+  </div>
+</div>
+
+<div class="container mt-4">
+    <form method="POST">
+    <select name="leaderboard_id" class="form-select">
+    {% for lb in leaderboards %}
+        <option value="{{ lb.id }}">{{ lb.name }}</option>
+    {% endfor %}
+    </select>
+    <input type="number" name="score" class="form-control mt-3" placeholder="Score">
+    <button class="btn btn-primary mt-3">Submit</button>
+</form>
+</div>
+
+{% endblock %}

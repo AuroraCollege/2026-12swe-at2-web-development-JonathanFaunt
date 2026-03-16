@@ -185,3 +185,34 @@ def delete_user(user_id):
     db.commit()
 
     return redirect("/moderation/users")
+
+@app.route("/account")
+def account():
+    db = get_db()
+
+    submissions = db.execute("""
+        SELECT leaderboard_entries.id,
+               leaderboard_entries.score,
+               leaderboard_entries.type,
+               leaderboards.name AS leaderboard_name
+        FROM leaderboard_entries
+        JOIN leaderboards ON leaderboard_entries.leaderboard_id = leaderboards.id
+        WHERE leaderboard_entries.user = ?
+        ORDER BY leaderboard_entries.id DESC
+    """, (session["username"],)).fetchall()
+
+    return render_template("account.html", submissions=submissions)
+
+@app.route("/delete/<int:entry_id>", methods=["POST"])
+def delete_submission(entry_id):
+    db = get_db()
+
+    db.execute("""
+        DELETE FROM leaderboard_entries
+        WHERE id = ? AND user = ?
+    """, (entry_id, session["username"]))
+
+    db.commit()
+
+    return redirect("/account")
+

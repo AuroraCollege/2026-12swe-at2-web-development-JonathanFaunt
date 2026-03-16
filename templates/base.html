@@ -22,7 +22,7 @@
           </li>
         {% endif %}
         <li class="nav-item mx-3, mt-2">
-          <span class="nav-link disabled text-light">{{ g.user['username'] }}</span>
+          <a class="nav-link" href="{{ url_for('account') }}">{{ g.user['username'] }}</a>
         </li>
         {% if g.user and g.user['role'] == 'User' %}
         <li class="nav-item mx-3, mt-2">
